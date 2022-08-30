@@ -18,7 +18,7 @@ import javax.validation.Valid;
 public class UserController {
 
     @Autowired
-    UserService userService;
+    private UserService userService;
 
     @PostMapping(value = "/sign-up",
             consumes = "application/json",
@@ -30,7 +30,7 @@ public class UserController {
     @PostMapping(value = "/log-in",
             consumes = "application/json",
             produces = "application/json")
-    public ResponseEntity<LoggedInUserResponse> logIn(@RequestBody LogInPayload logInPayload) throws Exception {
+    public ResponseEntity<LoggedInUserResponse> logIn(@RequestBody LogInPayload logInPayload) {
         return new ResponseEntity<>(userService.logInUser(logInPayload.getToken()), HttpStatus.OK);
     }
 

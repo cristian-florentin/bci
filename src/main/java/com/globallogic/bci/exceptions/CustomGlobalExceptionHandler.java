@@ -15,7 +15,7 @@ import java.time.LocalDateTime;
 public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(ExistingUserException.class)
-    ResponseEntity<CustomErrorList> existingUserHandler(Exception ex, WebRequest request) {
+    ResponseEntity<CustomErrorList> existingUserHandler(Exception ex) {
 
         CustomErrorList errors = generateErrorDetails(ex, HttpStatus.INTERNAL_SERVER_ERROR);
         return new ResponseEntity<>(errors, HttpStatus.INTERNAL_SERVER_ERROR);
@@ -28,6 +28,14 @@ public class CustomGlobalExceptionHandler extends ResponseEntityExceptionHandler
                                                                   WebRequest request) {
         CustomErrorList errors = generateErrorDetails(ex, HttpStatus.BAD_REQUEST);
         return new ResponseEntity<>(errors, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(InvalidTokenException.class)
+    ResponseEntity<CustomErrorList> invalidTokenHandler(Exception ex) {
+
+        CustomErrorList errors = generateErrorDetails(ex, HttpStatus.FORBIDDEN);
+        return new ResponseEntity<>(errors, HttpStatus.FORBIDDEN);
+
     }
 
     private CustomErrorList generateErrorDetails(Exception ex, HttpStatus status){

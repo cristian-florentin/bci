@@ -3,8 +3,10 @@ package com.globallogic.bci.service;
 import com.globallogic.bci.dto.LoggedInUserResponse;
 import com.globallogic.bci.dto.UserPayload;
 import com.globallogic.bci.dto.UserResponse;
+import com.globallogic.bci.entity.Phone;
 import com.globallogic.bci.entity.User;
 import com.globallogic.bci.exceptions.ExistingUserException;
+import com.globallogic.bci.exceptions.InvalidTokenException;
 import com.globallogic.bci.repo.PhoneRepository;
 import com.globallogic.bci.repo.UserRepository;
 import io.jsonwebtoken.Claims;
@@ -18,6 +20,7 @@ import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -41,6 +44,8 @@ public class UserService {
             User newUser = modelMapper.map(user, User.class);
             newUser.setCreated(Timestamp.valueOf(LocalDateTime.now()));
             newUser.setActive(true);
+            List<Phone> phones = savePhones(user.getPhones());
+            newUser.setPhones(phones);
             User createdUser = userRepository.save(newUser);
             UserResponse userResponse = modelMapper.map(createdUser, UserResponse.class);
             userResponse.setToken(generateToken(newUser));
@@ -50,6 +55,18 @@ public class UserService {
         }
     }
 
+    private List<Phone> savePhones(List<Phone> phoneList) {
+        List<Phone> phones = new ArrayList<>();
+        phoneList.forEach(phone -> {
+            if(phoneRepository.existsById(phone.getNumber())){
+                phones.add(phoneRepository.findById(phone.getNumber()).get());
+            } else{
+                phones.add(phoneRepository.save(phone));
+            }
+        });
+        return phones;
+    }
+
     public LoggedInUserResponse logInUser(String token){
         validateToken(token);
         Claims claims = Jwts.parser()
@@ -57,19 +74,22 @@ public class UserService {
                 .parseClaimsJws(token)
                 .getBody();
         Timestamp lastLogin = Timestamp.valueOf(LocalDateTime.now());
-        User user = userRepository.findByEmail(claims.getSubject());
-        user.setLastLogin(lastLogin);
-        LoggedInUserResponse userResponse = modelMapper.map(user, LoggedInUserResponse.class);
-        userResponse.setToken(generateToken(user));
-        return userResponse;
+        try{
+            User user = userRepository.findByEmail(claims.getSubject());
+            user.setLastLogin(lastLogin);
+            LoggedInUserResponse userResponse = modelMapper.map(user, LoggedInUserResponse.class);
+            userResponse.setToken(generateToken(user));
+            return userResponse;
+        }catch(Exception ex){
+            throw new InvalidTokenException();
+        }
     }
 
-    private boolean validateToken(String token) {
+    private void validateToken(String token) {
         try {
             Jwts.parser().setSigningKey(secretKey.getBytes()).parseClaimsJws(token);
-            return true;
         } catch (Exception e) {
-            return false;
+            throw new InvalidTokenException();
         }
     }
 

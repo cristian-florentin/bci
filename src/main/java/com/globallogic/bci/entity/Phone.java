@@ -22,8 +22,4 @@ public class Phone {
     @Column(name = "countryCode")
     private String countryCode;
 
-    @ManyToMany(mappedBy = "phones")
-    @JsonIgnore
-    private List<User> users = new ArrayList<>();
-
 }
