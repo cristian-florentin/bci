@@ -34,8 +34,7 @@ public class UserService {
     @Autowired
     private PhoneRepository phoneRepository;
 
-    @Autowired
-    private ModelMapper modelMapper;
+    private final ModelMapper modelMapper = new ModelMapper();
 
     private final String secretKey = "secretBCI";
 

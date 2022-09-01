@@ -1,0 +1,22 @@
+openapi: "3.0.3"
+info:
+  title: "bci API"
+  description: "bci API"
+  version: "1.0.0"
+servers:
+- url: "https://bci"
+paths:
+  /log-in:
+    post:
+      summary: "POST log-in"
+      operationId: "logIn"
+      responses:
+        "200":
+          description: "OK"
+  /sign-up:
+    post:
+      summary: "POST sign-up"
+      operationId: "signUp"
+      responses:
+        "200":
+          description: "OK"
